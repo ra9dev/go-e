@@ -13,5 +13,5 @@ This project shows basic knowledge of:
 To pull sender and receiver images and run them both copy-paste and run following command in your terminal:
 
 `
-docker-compose  -f deployments/docker-compose.yml  pull && docker-compose -f deployments/docker-compose.yml up
+docker-compose -f deployments/docker-compose.yml pull && docker-compose -f deployments/docker-compose.yml up
 `
