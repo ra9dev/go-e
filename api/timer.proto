@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+option go_package = "github.com/ra9dev/go-e/pkg;timer";
+package timer;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service Timer {
+  rpc CurrentTime (google.protobuf.Empty) returns (google.protobuf.Timestamp);
+}
+
