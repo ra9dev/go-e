@@ -5,8 +5,16 @@ services:
     ports:
       - "8080:8080"
     environment:
-      LISTEN: "127.0.0.1:8080"
+      LISTEN: ":8080"
+    networks:
+      - time
   recevier:
     image: "kubaidullov/go-e-receiver:latest"
     environment:
-      API_ADDR: "127.0.0.1:8080"
+      API_ADDR: sender:8080
+      REQUESTS_FREQUENCY: 5s
+    networks:
+      - time
+
+networks:
+  time:

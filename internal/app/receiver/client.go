@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-// TimeConsumer consumes time from timer.TimerSender periodically
+// TimeConsumer consumes time from timer.TimerServer
 type TimeConsumer struct {
 	addr              string
 	requestsFrequency time.Duration
@@ -20,6 +20,7 @@ type TimeConsumer struct {
 	client timer.TimerClient
 }
 
+// NewTimeConsumer constructor
 func NewTimeConsumer(config *TimeConsumerConfig) *TimeConsumer {
 	consumer := &TimeConsumer{
 		addr:              config.APIAddr,
@@ -29,6 +30,7 @@ func NewTimeConsumer(config *TimeConsumerConfig) *TimeConsumer {
 	return consumer
 }
 
+// Run periodically requests CurrentTime from timer.TimerServer
 func (c *TimeConsumer) Run(ctx context.Context) error {
 	if err := c.setupClient(); err != nil {
 		return err

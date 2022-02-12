@@ -21,12 +21,14 @@ type TimeSender struct {
 	timer.UnimplementedTimerServer
 }
 
+// NewTimeSender constructor
 func NewTimeSender(config *TimeSenderConfig) *TimeSender {
 	return &TimeSender{
 		addr: config.ListenAddr,
 	}
 }
 
+// CurrentTime logs and sends current time in UTC
 func (s *TimeSender) CurrentTime(context.Context, *emptypb.Empty) (*timestamppb.Timestamp, error) {
 	now := time.Now().UTC()
 	log.Printf("Sending %s", now.String())
@@ -34,6 +36,7 @@ func (s *TimeSender) CurrentTime(context.Context, *emptypb.Empty) (*timestamppb.
 	return timestamppb.New(now), nil
 }
 
+// Run grpc server that shutdowns gracefully on a context cancellation
 func (s *TimeSender) Run(ctx context.Context) error {
 	listener, err := s.setupServer()
 	if err != nil {
