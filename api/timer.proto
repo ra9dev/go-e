@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "github.com/ra9dev/go-e/pkg;timer";
+option go_package = "github.com/ra9dev/go-e/pkg/timer;timer";
 package timer;
 
 import "google/protobuf/empty.proto";

@@ -1,7 +1,20 @@
 package main
 
-import "fmt"
+import (
+	"context"
+	"github.com/ra9dev/go-e/internal/app/sender"
+	"github.com/ra9dev/go-e/internal/pkg/config"
+	"github.com/ra9dev/go-e/internal/pkg/os"
+)
 
 func main() {
-	fmt.Println("I'm a sender")
+	cfg := new(sender.TimeSenderConfig)
+	config.ParseConfig(cfg)
+
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	go os.CatchTermination(cancel)
+
+	server := sender.NewTimeSender(cfg)
+	server.Run(ctx)
 }
