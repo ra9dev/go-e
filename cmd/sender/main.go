@@ -16,5 +16,7 @@ func main() {
 	go os.CatchTermination(cancel)
 
 	server := sender.NewTimeSender(cfg)
-	server.Run(ctx)
+	if err := server.Run(ctx); err != nil {
+		panic(err)
+	}
 }

@@ -2,6 +2,7 @@ package sender
 
 import (
 	"context"
+	"fmt"
 	timer "github.com/ra9dev/go-e/pkg/timer"
 	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
@@ -16,7 +17,14 @@ import (
 type TimeSender struct {
 	addr string
 
+	grpcServer *grpc.Server
 	timer.UnimplementedTimerServer
+}
+
+func NewTimeSender(config *TimeSenderConfig) *TimeSender {
+	return &TimeSender{
+		addr: config.ListenAddr,
+	}
 }
 
 func (s *TimeSender) CurrentTime(context.Context, *emptypb.Empty) (*timestamppb.Timestamp, error) {
@@ -26,44 +34,43 @@ func (s *TimeSender) CurrentTime(context.Context, *emptypb.Empty) (*timestamppb.
 	return timestamppb.New(now), nil
 }
 
-func NewTimeSender(config *TimeSenderConfig) *TimeSender {
-	return &TimeSender{
-		addr: config.ListenAddr,
-	}
-}
-
-func (s *TimeSender) Run(ctx context.Context) {
-	listener, err := net.Listen("tcp", s.addr)
+func (s *TimeSender) Run(ctx context.Context) error {
+	listener, err := s.setupServer()
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		return fmt.Errorf("could not setup server: %v", err)
 	}
-
-	grpcServer := grpc.NewServer()
-	timer.RegisterTimerServer(grpcServer, s)
 
 	wg := new(sync.WaitGroup)
 	// 2 for server and graceful shutdown
 	wg.Add(2)
 
-	go s.serve(grpcServer, listener, wg)
-	go s.gracefulShutdown(ctx, grpcServer, wg)
+	go s.serve(listener, wg)
+	go s.gracefulShutdown(ctx, wg)
 
 	wg.Wait()
+	return nil
 }
 
-func (s *TimeSender) serve(grpcServer *grpc.Server, listener net.Listener, wg *sync.WaitGroup) {
+func (s *TimeSender) setupServer() (net.Listener, error) {
+	s.grpcServer = grpc.NewServer()
+	timer.RegisterTimerServer(s.grpcServer, s)
+
+	return net.Listen("tcp", s.addr)
+}
+
+func (s *TimeSender) serve(listener net.Listener, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	log.Printf("[INFO] serving GRPC on \"%s\"", s.addr)
-	if err := grpcServer.Serve(listener); err != nil {
+	if err := s.grpcServer.Serve(listener); err != nil {
 		log.Fatalf("[ERROR] grpc serve: %v", err)
 	}
 }
 
-func (s *TimeSender) gracefulShutdown(ctx context.Context, grpcServer *grpc.Server, wg *sync.WaitGroup) {
+func (s *TimeSender) gracefulShutdown(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	<-ctx.Done()
 	log.Printf("[INFO] shutting down gRPC server")
-	grpcServer.GracefulStop()
+	s.grpcServer.GracefulStop()
 }
