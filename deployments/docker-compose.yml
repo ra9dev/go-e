@@ -1,0 +1,12 @@
+version: "3.9"
+services:
+  sender:
+    image: "kubaidullov/go-e-sender:latest"
+    ports:
+      - "8080:8080"
+    environment:
+      LISTEN: "127.0.0.1:8080"
+  recevier:
+    image: "kubaidullov/go-e-receiver:latest"
+    environment:
+      API_ADDR: "127.0.0.1:8080"

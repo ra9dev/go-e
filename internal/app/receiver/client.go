@@ -52,6 +52,7 @@ func (c *TimeConsumer) Run(ctx context.Context) error {
 }
 
 func (c *TimeConsumer) setupClient() error {
+	log.Printf("[INFO] Connecting to %s", c.addr)
 	conn, err := grpc.Dial(c.addr, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return fmt.Errorf("could not connect to api: %w", err)
